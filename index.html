@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>reddit play</title>
+    <link href="https://fonts.googleapis.com/css?family=Arvo&display=swap" rel="stylesheet"> 
+    <script src="https://kit.fontawesome.com/d1172c4104.js"></script>
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+            margin-top: 0 !important;
+            margin-left: 0;
+        }
+        #content{
+            overflow: hidden;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: visible;
+            padding-top: 70px;
+        }
+        #fav{
+            overflow: hidden;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: visible;
+            display: none;
+            padding-top: 70px;
+
+        }
+        #nav{
+            overflow: hidden;
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            margin: 0 auto;
+            color: #57a2e4;
+            overflow: visible;
+            font-size: 16px;
+            font-family: Helvetica, sans-serif;
+            border-bottom: 1px solid #929292;
+            position: fixed;
+            background: white;
+        }
+        #nav a{
+            margin: 0 10px;
+        }
+        .section{
+            margin: 30px auto;
+            box-shadow: 1px 0px 6px #929292;
+            
+            text-align: center;
+        }
+        .section .title{
+            font-family: 'Arvo', serif;
+            font-size: 18px;
+            line-height: 24px;
+            color: #000;
+            border-bottom: 1px solid #dcdcdc;
+            padding: 1.5rem 0
+        }
+        .section .image{
+            max-width: 500px;
+            height: 350px;
+            background: black
+
+        }
+        .section .info{
+            font-family: 'Helvetica';
+            font-size: 12px;
+            line-height: 48px;
+            color: #999;
+        }
+        .section .info i{
+            margin-right: 5px
+        }
+        .section .image img{
+            max-width: 500px;
+            height: 350px;
+
+        }
+        .author::after{
+            content: '';
+            background: #999;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            position: relative;
+            left: 2px;
+            top: -2px;
+            margin-right: 5px;
+            margin-left: 5px;
+            display: inline-block;
+        }
+        .time::after{
+            content: '';
+            background: #999;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            position: relative;
+            left: 2px;
+            top: -2px;
+            margin-right: 5px;
+            margin-left: 5px;
+            display: inline-block;
+        }
+        .fa-user, .fa-clock, .fa-bolt, .fa-reddit-alien, .fa-heart{
+            margin: 0 5px !important;
+        }
+       
+    </style>
+    
+    <script type="text/javascript">
+        window.onload=()=>{
+            const oNav =document.createElement('nav');
+            oNav.id='nav';
+            document.body.appendChild(oNav);
+
+            var isLoad = true;
+
+            const navAnalog =document.createElement('a');
+            navAnalog.class='navAnalog';
+            oNav.appendChild(navAnalog);
+
+            navAnalog.innerHTML='/r/analog';
+            const navAnalogIcon=document.createElement('span');
+            navAnalogIcon.className='fab fa-reddit-alien';
+            const navAnalogfirst=navAnalog.firstChild;
+            navAnalog.insertBefore(navAnalogIcon,navAnalogfirst);
+
+            const navFavCon=document.createElement('a');
+            navFavCon.className='navFavCon';
+            oNav.appendChild(navFavCon);
+
+            const navFavIcon=document.createElement('span');
+            navFavIcon.className='fas fa-heart';
+            navFavCon.appendChild(navFavIcon);
+
+            let navFav =document.createElement('span');
+            navFav.className='navFav';
+            navFavCon.appendChild(navFav);
+            navFav.innerText='favorite(0)';
+
+            const oContent =document.createElement('div');
+            oContent.id='content';
+            document.body.appendChild(oContent);
+
+            const oFav =document.createElement('div');
+            oFav.id='fav';
+            document.body.appendChild(oFav);
+            let favObj=[];
+
+
+            navFav.onclick=()=>{
+                oFav.style.display='block';
+                oContent.style.display='none';
+            }
+
+            navAnalog.onclick=()=>{
+                oFav.style.display='none';
+                oContent.style.display='block';
+            }
+
+            const request= new XMLHttpRequest();
+            request.open('GET', 'https://www.reddit.com/r/analog/top/.json', true);
+            request.send();
+            request.onreadystatechange=()=>{
+                if(request.readyState===4){
+                    if(request.status===200){
+                        const dataJson=JSON.parse(request.response);
+                        const dataLength=dataJson.data.children;
+                        //console.log(test);
+                        for(let i=0; i<6; i++){
+                            
+                            setElements(oContent, dataLength[i]);
+
+                        }
+                        isLoad = true;
+                        window.onscroll  = function(){
+					// self height
+					// distance to top
+					var height = oContent.offsetHeight + oContent.offsetTop + 10;
+					// scrollbar height
+					var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+					// window height
+					var screenH = document.documentElement.clientHeight;
+				
+					if(scrollTop + screenH > height){
+
+                        if(isLoad){
+                            isLoad = false;
+                            for(let i=6; i<dataLength.length; i++){
+                                setElements(oContent, dataLength[i]);
+                            }
+                        }
+					}
+				}
+                    }
+                }
+            }
+
+            function setElements(parentEle, presentEle){
+                const oSection =document.createElement('div');
+                oSection.className='section';
+                parentEle.appendChild(oSection);
+
+                const oImg =document.createElement('div');
+                oImg.className='image';
+                oSection.appendChild(oImg);
+                oImg.onclick=addFav;
+
+                const dataImg=document.createElement('img');
+                dataImg.src=presentEle.data.url;
+                oImg.appendChild(dataImg);
+
+                const oTitle =document.createElement('div');
+                oTitle.className='title';
+                oTitle.innerHTML=presentEle.data.title;
+                oSection.appendChild(oTitle);
+
+                const oInfo =document.createElement('div');
+                oInfo.className='info';
+                oSection.appendChild(oInfo);
+
+                const oAuthor=document.createElement('span');
+                oInfo.appendChild(oAuthor);
+                oAuthor.innerHTML=presentEle.data.author;
+                const oAuthorIcon=document.createElement('span');
+                oAuthorIcon.className='fas fa-user';
+                const authorfirst=oAuthor.firstChild;
+                oAuthor.insertBefore(oAuthorIcon,authorfirst);
+
+                const oTime=document.createElement('span');
+                oInfo.appendChild(oTime);
+                const timeFormat=presentEle.data.created_utc*1000;
+                oTime.innerHTML=countTime(timeFormat)
+                oImg.ele=presentEle.data.id;
+
+                const oTimeIcon=document.createElement('span');
+                oTimeIcon.className='far fa-clock';
+                const timefirst=oTime.firstChild;
+                oTime.insertBefore(oTimeIcon,timefirst);
+
+                const oUp=document.createElement('span');
+                oInfo.appendChild(oUp);
+                oUp.innerHTML=presentEle.data.ups;
+                const oUpIcon=document.createElement('span');
+                oUpIcon.className='fas fa-bolt';
+                const upfirst=oUp.firstChild;
+                oUp.insertBefore(oUpIcon,upfirst);
+
+            }
+            /* function anima(){
+                let favIcon=document.createElement('span');
+                favIcon.className='fas fa-bolt favIcon';
+                this.appendChild(favIcon);
+                alert('yes')
+            } */
+            function addFav(){
+                //console.log(this.innerHTML);
+                    if(this.parentElement.parentElement.id==='content'){
+                        console.log(oFav.childElementCount);
+                        var lis = oFav.childNodes;
+                        var eleJudge=false;
+                        
+                        if(oFav.childElementCount===0){
+                            const oChoose=this.parentNode;
+                            const cln=oChoose.cloneNode(true);
+                            const newElement=oFav.appendChild(cln);
+                            newElement.onclick=testclick;
+                            //console.log(newElement);
+                            navFav.innerText='favorite('+oFav.childElementCount+')';
+
+                        }
+                        
+                        else{
+                            var favEle=oFav.querySelectorAll('.image');
+                            for(var i=0; i<favEle.length; i++){
+                                
+                                if(favEle[i].innerHTML===this.innerHTML){
+                                    eleJudge=true;
+                                }
+                                console.log(oFav.querySelectorAll('.image')[0].innerHTML);
+                                var test=oFav.querySelector('.image');
+                                console.log(test);   
+                            }
+                            if(eleJudge===false){
+                                const oChoose=this.parentNode;
+                                const cln=oChoose.cloneNode(true);
+                                const newElement=oFav.appendChild(cln);
+                                newElement.onclick=testclick;
+                                //document.getElementById('testt').innerText=oFav.childElementCount;
+                                navFav.innerText='favorite('+oFav.childElementCount+')';
+                                //testt2.innerText=oFav.childElementCount;
+                            }
+                        } 
+                    }
+                    
+                    
+
+            }
+            function testclick(){
+                //alert('yes');
+                oFav.removeChild(this);
+                //document.getElementById('testt').innerText=oFav.childElementCount;
+                navFav.innerText='favorite('+oFav.childElementCount+')';
+                //testt2.innerText=oFav.childElementCount;
+            }
+
+            function countTime(targetStr) {
+                var targetDate = new Date(targetStr)
+                var currentDate = new Date()
+                
+                // during time = present time - target time 
+                var diffTime = currentDate-targetDate;
+                //console.log('diffTime', diffTime)
+            
+                // clean timer
+                if (diffTime <= 0) {
+                    window.clearInterval(timer)
+                    return 'error!'
+                }
+            
+                diffTime = diffTime / 1000
+            
+                var convertDay = 60 * 60 * 24
+                var convertHour = 60 * 60
+                // day
+                var day = Math.floor(diffTime / convertDay)
+            
+                diffTime = diffTime % convertDay
+                
+                // hour
+                var hour = Math.floor(diffTime / convertHour)
+                diffTime = diffTime % convertHour
+            
+                // minute
+                var minutes = Math.floor(diffTime / 60)
+                diffTime = diffTime % 60
+            
+                // second
+                var seconds = Math.floor(diffTime)
+                
+                var text='';
+                    if(day){
+                        text=day+'day ago';
+                    }
+                    else if(hour){
+                        text=hour+'hour ago';
+                    }
+                    else if(minutes){
+                        text=minutes+'minutes ago';
+                    }
+                    else{
+                        text=seconds+'seconds ago';
+                    }
+                    return text;
+            }
+        }
+
+    </script>
+
+    
+  </head>
+  <body>
+      <!-- layout refer -->
+      <!-- <nav id="nav">
+          <a class="navAnalog"><i class="fab fa-reddit-alien"></i>/r/analog</a>
+          <a class="navFav"><i class="fas fa-heart"></i>fav</a>
+
+      </nav> -->
+      <!-- <div id="content">
+          <div class="section">
+              <div class="image"><img src="https://i.redd.it/5b4831luzsl31.jpg" alt=""></div>
+              <div class="title">A Bit Odd | Bronica SQ, Portra 400</div>
+              <div class="info">
+                  <span class="author"><i class="fas fa-user"></i>braehunz</span>
+                  <span class="time"><i class="far fa-clock"></i>9hours ago</span>
+                  <span class="up"><i class="fas fa-bolt"></i>797</span>
+              </div>
+
+          </div>
+      </div> -->
+  </body>
+</html>
